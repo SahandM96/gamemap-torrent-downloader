@@ -1,0 +1,41 @@
+[package]
+name = "gamemap-torrent-desk"
+version = "0.1.0"
+description = "GameMap Torrent Desk — local search + aria2c download manager"
+authors = ["GameMap Studio"]
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "gamemap_torrent_desk_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "process", "time", "fs"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "gzip", "socks", "blocking"] }
+sha1 = "0.10"
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+dirs = "6"
+regex = "1"
+urlencoding = "2"
+parking_lot = "0.12"
+once_cell = "1"
+thiserror = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+hex = "0.4"
+# Offline TRX donation QR (SVG) — no CDN dependency in the webview.
+qrcode = { version = "0.14", default-features = false, features = ["svg"] }
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+lto = true

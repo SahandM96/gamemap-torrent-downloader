@@ -1,0 +1,19 @@
+GameMap Torrent Desk
+Copyright (c) 2026 GameMap Studio
+
+This application is licensed under the MIT License (see LICENSE).
+
+Third-party components
+----------------------
+
+aria2 / aria2c
+  Copyright (C) 2006-2024 the respective authors
+  License: GNU General Public License v2 or later (GPL-2+)
+  Source: https://github.com/aria2/aria2
+
+GameMap Torrent Desk runs aria2c as a separate sidecar process. The aria2c
+binary is not linked into the application binary; it is merely aggregated
+for distribution convenience. When you receive a build that bundles aria2c,
+you may obtain corresponding source for aria2 under the terms of GPL-2+.
+
+Release builds pin aria2 version 1.37.0 unless noted otherwise in release notes.

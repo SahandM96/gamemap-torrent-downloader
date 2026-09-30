@@ -1,0 +1,61 @@
+# Dependencies & build
+node_modules/
+dist/
+build/
+target/
+src-tauri/target/
+*.tmp
+*.swp
+*~
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+**/rpc.secret
+
+# Runtime / user data (never ship)
+run/
+**/run/
+**/state.json
+**/*.session
+**/aria2.log
+*.torrent
+*.aria2
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# Editors / OS
+.idea/
+.vscode/
+.cursor/
+*.code-workspace
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Tauri / local UI helpers
+ui/.tauri-dev
+
+# Sidecar binaries — fetch locally or in CI (see sidecars/README.md)
+# Keep VERSION, SOURCE.txt, README, prepare script, and pinned sha256 in git.
+sidecars/aria2c
+sidecars/aria2c.exe
+sidecars/aria2c-*
+src-tauri/resources/sidecars/
+
+# Legacy Python HTTP UI (superseded by ui/ for Tauri) — local only
+static/
+
+# Logs & caches
+*.log
+.npm/
+.cargo-cache/

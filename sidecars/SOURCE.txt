@@ -1,0 +1,4 @@
+Pinned aria2c 1.37.0 static Linux x86_64 from abcfy2/aria2-static-build
+https://github.com/abcfy2/aria2-static-build/releases/download/1.37.0/aria2-x86_64-linux-musl_static.zip
+Upstream: https://github.com/aria2/aria2 (GPL-2+)
+CI downloads platform binaries at build time; this copy is for local Linux dev.

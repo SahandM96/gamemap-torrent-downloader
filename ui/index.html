@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GameMap Torrent Desk</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<canvas id="bgCanvas" class="bg-canvas" aria-hidden="true"></canvas>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<div class="busy" id="busy" hidden>
+  <div class="busy-card glass">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="busyText">در حال بارگذاری…</p>
+  </div>
+</div>
+
+<header class="top glass">
+  <div class="brand">
+    <img class="brand-logo" src="game-map-logo.png" width="40" height="40" alt="GameMap">
+    <div class="brand-text">
+      <span class="brand-name">GameMap</span>
+      <span class="brand-sub">Torrent Desk</span>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="search">جست‌وجو</button>
+    <button class="tab" data-tab="downloads">دانلودها <span class="badge" id="dlBadge">0</span></button>
+    <button class="tab" data-tab="partials">نصفه‌کاره <span class="badge" id="ptBadge">0</span></button>
+    <button class="tab" data-tab="settings">تنظیمات</button>
+    <button class="tab" data-tab="support">حمایت</button>
+  </nav>
+  <div class="status" id="ariaStatus">aria2: در حال بررسی…</div>
+</header>
+
+<main>
+  <section class="panel active" id="tab-search">
+    <form class="searchbar glass" id="searchForm">
+      <input id="q" type="search" placeholder="مثلاً: matrix 1999 1080p" autocomplete="off" autofocus>
+      <label class="limit-wrap" title="حداکثر نتیجه از هر سایت">
+        <span class="limit-label">حداکثر</span>
+        <select id="limit" class="limit-select" aria-label="حداکثر نتیجه از هر سایت">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="40">40</option>
+        </select>
+      </label>
+      <button class="primary" type="submit" id="searchBtn">
+        <span class="btn-label">جست‌وجو</span>
+        <span class="btn-spin" hidden aria-hidden="true"></span>
+      </button>
+      <button class="ghost" type="button" id="probeBtn">وضعیت سایت‌ها</button>
+    </form>
+
+    <div class="sources-bar glass">
+      <div class="sources-head">
+        <span class="muted tiny">سایت‌های جست‌وجو</span>
+        <button class="ghost sm" type="button" id="manageSourcesBtn">مدیریت لیست…</button>
+      </div>
+      <div class="chips" id="sourceChips"></div>
+      <div class="chips small" id="sourceStatus"></div>
+      <div class="proxy-row">
+        <label class="proxy-label" for="quickProxy">پروکسی</label>
+        <input id="quickProxy" dir="ltr" spellcheck="false" autocomplete="off"
+               placeholder="socks5h://127.0.0.1:10808">
+        <button class="primary sm" type="button" id="quickProxySave">ذخیره</button>
+        <button class="ghost sm" type="button" id="quickProxyTest">تست</button>
+        <button class="ghost sm" type="button" id="quickProxyDetect">تشخیص</button>
+        <button class="ghost sm" type="button" id="quickProxyClear" title="حذف پروکسی">✕</button>
+        <span class="muted tiny" id="quickProxyState"></span>
+      </div>
+    </div>
+
+    <div class="toolbar glass">
+      <label class="inline"><input type="checkbox" id="selAll"> انتخاب همه</label>
+      <span class="muted" id="resCount">هنوز جست‌وجویی انجام نشده</span>
+      <label class="inline muted sort-wrap">مرتب‌سازی
+        <select id="sortResults" class="limit-select" aria-label="مرتب‌سازی نتایج">
+          <option value="seeds" selected>بیشترین سیچر</option>
+          <option value="size">حجم</option>
+          <option value="name">نام</option>
+        </select>
+      </label>
+      <button class="primary sm" type="button" id="bulkBtn" disabled>دانلود انتخاب‌شده‌ها…</button>
+    </div>
+
+    <div class="results-wrap glass" id="resultsWrap">
+      <div class="results-head">
+        <span></span>
+        <span>عنوان / جزئیات</span>
+        <span class="hide-sm">منبع</span>
+        <span>حجم</span>
+        <span class="seeds-h">سیچر</span>
+        <span class="hide-sm">لینچر</span>
+        <span></span>
+      </div>
+      <div id="resultBody" class="results-body">
+        <div class="empty">عبارت جست‌وجو را بنویسید و «جست‌وجو» را بزنید.</div>
+      </div>
+      <div class="table-loading" id="searchLoading" hidden>
+        <div class="spinner lg"></div>
+        <p>در حال جست‌وجو در سایت‌ها…</p>
+        <div class="skeleton-rows" aria-hidden="true">
+          <i></i><i></i><i></i><i></i>
+        </div>
+      </div>
+    </div>
+
+    <details class="manual glass">
+      <summary>مغناطیس دستی یا لینک فایل .torrent</summary>
+      <div class="row">
+        <input id="manualUrl" placeholder="magnet:?xt=urn:btih:… یا  https://…/file.torrent">
+        <button class="primary sm" type="button" id="manualBtn">ادامه…</button>
+      </div>
+      <p class="muted tiny">برای سایت‌هایی که در مرورگر باز می‌شوند می‌توانید لینک را اینجا بچسبانید.</p>
+    </details>
+  </section>
+
+  <section class="panel" id="tab-downloads">
+    <div class="toolbar glass">
+      <button class="ghost sm" type="button" id="refreshDl">تازه‌سازی</button>
+      <button class="ghost sm" type="button" id="daemonBtn">راه‌اندازی aria2</button>
+      <button class="ghost sm" type="button" id="saveSessionBtn">ذخیره صف</button>
+      <span class="muted" id="globalStat"></span>
+      <span class="spacer"></span>
+      <label class="inline muted">مرتب‌سازی
+        <select id="sortDl">
+          <option value="new">جدیدترین</option><option value="old">قدیمی‌ترین</option>
+        </select>
+      </label>
+    </div>
+    <div class="cards" id="dlList"><div class="empty-card glass">لیست دانلود خالی است.</div></div>
+  </section>
+
+  <section class="panel" id="tab-partials">
+    <div class="toolbar glass">
+      <input id="scanRoot" placeholder="پوشه برای اسکن (خالی = مقصد پیش‌فرض + موارد اخیر)" readonly>
+      <button class="ghost sm" type="button" id="scanBrowse">انتخاب پوشه (سیستم)…</button>
+      <button class="primary sm" type="button" id="scanBtn">اسکن</button>
+      <button class="ghost sm" type="button" id="scanClear" title="پاک کردن مسیر">✕</button>
+      <span class="muted" id="scanInfo"></span>
+    </div>
+    <div class="cards" id="partialList"><div class="empty-card glass">هنوز اسکنی انجام نشده.</div></div>
+    <p class="muted tiny">هر فایل <code>*.aria2</code> یک دانلود نیمه‌کاره است.</p>
+  </section>
+
+  <section class="panel" id="tab-settings">
+    <div class="grid2">
+      <fieldset class="glass">
+        <legend>مقصدها و شبکه</legend>
+        <label>مقصد پیش‌فرض
+          <div class="row">
+            <input id="setDir" placeholder="با دیالوگ سیستم عامل انتخاب کنید" readonly>
+            <button class="primary sm" type="button" data-browse="setDir">انتخاب پوشه…</button>
+          </div>
+        </label>
+        <label>پروکسی (برای سایت‌های فیلترشده و aria2)
+          <input id="setProxy" dir="ltr" placeholder="socks5h://127.0.0.1:10808 یا http://127.0.0.1:8118">
+        </label>
+        <label class="row2">
+          <span>همزمانی دانلود
+            <select id="setMax">
+              <option>1</option><option>2</option><option selected>3</option>
+              <option>4</option><option>6</option><option>8</option>
+            </select>
+          </span>
+          <span>تخصیص فضا
+            <select id="setAlloc">
+              <option value="none" selected>none</option>
+              <option value="prealloc">prealloc</option>
+              <option value="falloc">falloc</option>
+            </select>
+          </span>
+        </label>
+        <label class="inline"><input type="checkbox" id="setPaused"> شروع دانلودها در حالت Pause</label>
+        <label class="inline"><input type="checkbox" id="setCreate" checked> ساخت پوشهٔ مقصد در صورت نبود</label>
+        <div class="row"><button class="primary sm" type="button" id="saveSettings">ذخیره تنظیمات</button></div>
+      </fieldset>
+
+      <fieldset class="glass">
+        <legend>aria2c</legend>
+        <dl class="kv" id="ariaInfo"></dl>
+        <div class="row wrap">
+          <button class="ghost sm" type="button" data-daemon="start">شروع</button>
+          <button class="ghost sm" type="button" data-daemon="stop">توقف</button>
+          <button class="ghost sm" type="button" data-daemon="save">ذخیره صف</button>
+          <button class="ghost sm" type="button" data-daemon="purge">پاک‌سازی نتایج قدیمی</button>
+          <button class="ghost sm" type="button" data-daemon="log">نمایش لاگ</button>
+        </div>
+        <pre class="log" id="ariaLog" hidden></pre>
+        <dl class="kv" id="pathInfo"></dl>
+      </fieldset>
+    </div>
+
+    <fieldset class="glass">
+      <legend>کاتالوگ سایت‌ها (همیشه موجود)</legend>
+      <p class="muted tiny">سایت‌های پیش‌فرض همیشه در کاتالوگ هستند. می‌توانید آن‌ها را به لیست جست‌وجو اضافه یا از آن حذف کنید.</p>
+      <div class="toolbar">
+        <button class="ghost sm" type="button" id="probeBtn2">بررسی همه سایت‌ها</button>
+        <button class="ghost sm" type="button" id="enableAllSources">فعال‌سازی همه</button>
+        <button class="ghost sm" type="button" id="disableBlockedHint">فقط موارد بدون هشدار مسدودی</button>
+        <span class="muted" id="probeInfo"></span>
+      </div>
+      <div class="source-catalog" id="sourceCatalog"></div>
+      <div class="chips" id="probeList"></div>
+    </fieldset>
+  </section>
+
+  <section class="panel" id="tab-support">
+    <div class="support-hero">
+      <img class="support-logo" src="game-map-logo.png" width="96" height="96" alt="GameMap">
+      <p class="eyebrow">GameMap Studio</p>
+      <h2 class="support-title">حمایت از توسعه</h2>
+      <p class="support-lead">Torrent Desk متن‌باز است. اگر برایتان مفید بود، می‌توانید با زرین‌پال یا TRX حمایت کنید.</p>
+    </div>
+    <div class="grid2 support-grid">
+      <fieldset class="donate-card glass">
+        <legend>زرین‌پال — مبلغ دلخواه</legend>
+        <p class="muted tiny">پرداخت از طریق API گیم‌مپ با مبلغ درخواستی.</p>
+        <div class="donate-presets" id="donatePresets"></div>
+        <label>مبلغ (ریال)
+          <input id="donateAmount" type="number" min="100000" step="10000" value="100000" inputmode="numeric">
+        </label>
+        <p class="muted tiny" id="donateTomanHint">≈ ۱۰٬۰۰۰ تومان</p>
+        <div class="row wrap">
+          <button class="primary" type="button" id="donatePayBtn">پرداخت با زرین‌پال</button>
+        </div>
+        <p class="muted tiny err-inline" id="donateErr" hidden></p>
+      </fieldset>
+
+      <fieldset class="donate-card glass tron-card">
+        <legend>TRX · شبکه ترون</legend>
+        <div class="tron-layout">
+          <div class="tron-qr-wrap">
+            <div id="tronQr" class="tron-qr" role="img" aria-label="QR آدرس TRX"></div>
+            <img class="tron-qr-logo" src="game-map-logo.png" alt="" width="40" height="40">
+          </div>
+          <div class="tron-meta">
+            <p class="muted tiny">آدرس را اسکن کنید یا کپی کنید. شبکه: <b>TRON (TRC20)</b></p>
+            <p class="mono" id="tronAddress"></p>
+            <div class="donate-row">
+              <button class="primary sm" type="button" id="tronCopyBtn">کپی آدرس</button>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+    </div>
+    <p class="muted tiny">موتور دانلود <code>aria2c</code> تحت مجوز GPL-2+ به‌صورت فرایند جدا اجرا می‌شود؛ جزئیات در <code>NOTICE</code>.</p>
+  </section>
+</main>
+
+<dialog class="dlg glass-dlg" id="destDlg">
+  <div class="dlg-body">
+    <h3 id="destTitle">مقصد دانلود</h3>
+    <p class="muted tiny">مسیر با دیالوگ استاندارد سیستم‌عامل انتخاب می‌شود.</p>
+    <label>عنوان <input id="destName" placeholder="نام مورد"></label>
+    <label>مقصد
+      <div class="row">
+        <input id="destPath" readonly placeholder="هنوز پوشه‌ای انتخاب نشده">
+        <button class="primary sm" type="button" id="destPick">انتخاب پوشه…</button>
+      </div>
+    </label>
+    <label class="inline"><input type="checkbox" id="destRemember"> این مقصد برای این سایت همیشه نگه داشته شود</label>
+    <label class="inline"><input type="checkbox" id="destCreate" checked> اگر پوشه نبود ساخته شود</label>
+    <label class="inline"><input type="checkbox" id="destPaused"> با Pause شروع شود</label>
+    <footer class="dlg-foot">
+      <button class="ghost" type="button" id="destCancel">انصراف</button>
+      <button class="primary" type="button" id="destGo">شروع دانلود</button>
+    </footer>
+  </div>
+</dialog>
+
+<dialog class="dlg glass-dlg" id="sourcesDlg">
+  <div class="dlg-body">
+    <h3>مدیریت سایت‌های جست‌وجو</h3>
+    <p class="muted tiny">کاتالوگ پیش‌فرض همیشه هست؛ فقط عضویت در لیست جست‌وجو را کم/زیاد کنید.</p>
+    <div class="source-catalog" id="sourceCatalogDlg"></div>
+    <footer class="dlg-foot">
+      <button class="ghost" type="button" id="sourcesDlgClose">بستن</button>
+    </footer>
+  </div>
+</dialog>
+
+<dialog class="dlg glass-dlg" id="filesDlg">
+  <div class="dlg-body">
+    <h3 id="filesTitle">فایل‌ها</h3>
+    <div class="files" id="filesList"></div>
+    <footer class="dlg-foot"><button class="ghost" type="button" id="filesClose">بستن</button></footer>
+  </div>
+</dialog>
+
+<div class="toast glass" id="toast" hidden></div>
+<script src="bg.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
