@@ -1,28 +1,48 @@
-# API (Tauri `desk_api`)
+# API — `desk_api`
 
-همهٔ درخواست‌ها از UI با `invoke('desk_api', { req: { path, method, body } })`.  
-پاسخ موفق: `{ "success": true, "data": … }`. خطا: `Err(String)` در invoke (پیام فارسی/انگلیسی).
+ورود از UI:
 
-`path` می‌تواند با `/api/` شروع شود. `body` برای POST یک شیء JSON است (نه رشته).
+```js
+invoke('desk_api', { req: { path, method, body } })
+```
 
-| Method | path | Notes |
-|--------|------|-------|
-| GET | `/api/health` | aria2 up/version/binary، default_dir |
-| GET | `/api/sources` | لیست منابع |
+- موفق: `{ success: true, data }`
+- خطا: `Err(String)` از invoke
+- `path` می‌تواند با `/api/` شروع شود
+- `body` برای POST شیء JSON است
+
+## مسیرها
+
+| Method | Path | توضیح |
+|--------|------|--------|
+| GET | `/api/health` | وضعیت aria2 و `default_dir` |
+| GET | `/api/sources` | فهرست منابع |
 | GET | `/api/downloads` | `{ aria2, items[] }` |
 | GET | `/api/partials?root=` | اسکن `*.aria2` |
-| GET | `/api/settings` | prefs، recent_dirs، paths |
+| GET | `/api/settings` | prefs و مسیرها |
 | POST | `/api/search` | `{ query, sources?, limit? }` |
-| POST | `/api/sources/probe` | latency per mirror |
-| POST | `/api/download` | `{ magnet \| torrent_url, dir, … }` — **dir مطلق** |
-| POST | `/api/downloads/{id}/pause` \| `resume` \| `stop` \| `reveal` |
+| POST | `/api/sources/probe` | تأخیر آینه‌ها |
+| POST | `/api/download` | `{ magnet \| torrent_url, dir, … }` — `dir` مطلق |
+| POST | `/api/downloads/{id}/pause` | |
+| POST | `/api/downloads/{id}/resume` | |
+| POST | `/api/downloads/{id}/stop` | |
+| POST | `/api/downloads/{id}/reveal` | |
 | POST | `/api/downloads/{id}/redir` | `{ dir, create_dir? }` |
 | POST | `/api/downloads/{id}/delete` | `{ remove_files? }` |
 | POST | `/api/partials/delete` | `{ control, remove_target? }` |
 | POST | `/api/settings` | patch prefs |
 | POST | `/api/daemon` | `{ action: start\|stop\|save\|purge\|log }` |
 | POST | `/api/mkdir` | `{ parent, name }` |
+| POST | `/api/proxy/test` | تست پروکسی |
+| GET | `/api/proxy/detect` | تشخیص پورت‌های رایج پروکسی محلی |
 
-دستورات جدا: `pick_folder`, `open_url` (فقط `https://`), `donate_info`, `create_donation({ amountIrr, description? })` → `{ payment_url, amount_irr }` via `https://api.gamemap.ir/api/v1/donations/create`.
+## دستورات جدا
 
-**حذف‌شده نسبت به Python:** `GET /api/browse` — انتخاب پوشه با دیالوگ native Tauri.
+| Command | قرارداد |
+|---------|---------|
+| `pick_folder` | دیالوگ native |
+| `open_url` | فقط `https://` |
+| `donate_info` | آدرس TRX و متادیتای دونیت |
+| `create_donation` | `{ amountIrr, description? }` → `{ payment_url, amount_irr }` |
+
+دونیت ریالی از طریق `https://api.gamemap.ir/api/v1/donations/create` ساخته می‌شود.

@@ -1,36 +1,52 @@
 # معماری
 
-## خلاصه
+## نمای کلی
 
-اپ دسکتاپ **Tauri 2** (Rust) + UI استاتیک فارسی در `ui/`. منطق دانلود و aria2 در Rust (`src-tauri/src/desk.rs`, `aria.rs`, `store.rs`, `net.rs`). جست‌وجوی منابع در v0.1 از **پل Python** (`scripts/search_bridge.py` → `_legacy/sources.py`) تا پورت کامل Rust آماده شود.
-
-**aria2c** همیشه **sidecar** است (فرایند جدا، GPL-2+) — در باینری Rust لینک نمی‌شود. جزئیات: [`NOTICE`](../NOTICE).
+| لایه | فناوری | نقش |
+|------|---------|-----|
+| UI | `ui/` (HTML/CSS/JS) | RTL فارسی؛ `invoke('desk_api', …)` |
+| Core | Rust / Tauri 2 (`src-tauri/`) | دانلود، صف، تنظیمات، RPC به aria2 |
+| Search | `scripts/search_bridge.py` → `_legacy/sources.py` | جست‌وجو و probe منابع |
+| Engine | aria2c sidecar | فرایند جدا؛ GPL-2+ — [`NOTICE`](../NOTICE) |
 
 ```
-gamemap-torrent-desk/
-├── ui/                    # index.html, app.js, app.css — invoke → desk_api
-├── src-tauri/
-│   ├── src/
-│   │   ├── lib.rs         # Tauri entry, plugins (dialog, shell)
-│   │   ├── commands.rs    # desk_api, pick_folder, open_url, donate_info
-│   │   ├── desk.rs        # downloads, move/delete/partials, settings
-│   │   ├── aria.rs        # daemon + JSON-RPC
-│   │   ├── store.rs       # state.json + prefs
-│   │   ├── net.rs         # fetch, magnet, bencode
-│   │   ├── sidecar.rs     # resolve bundled aria2c
-│   │   └── sources.rs     # bridge to Python search
-│   └── tauri.conf.json
-├── sidecars/              # meta + sha256؛ باینری را لوکال/CI بگیرید (README)
-├── scripts/search_bridge.py
-├── _legacy/               # Python stdlib stack (reference + bridge)
-└── docs/                  # این پوشه
+├── ui/                 # فرانت‌اند
+├── src-tauri/src/      # desk, aria, store, net, sources, sidecar
+├── sidecars/           # متادیتای aria2؛ باینری در git نیست
+├── scripts/            # پل جست‌وجو
+├── _legacy/            # مرجع Python + منابع جست‌وجو
+└── docs/
 ```
 
-## دادهٔ محلی
+## دادهٔ محلی (runtime)
 
-- **App data** (Tauri): `state.json`, `run/aria2.session`, `run/rpc.secret`, `run/aria2.log`, `bin/aria2c` (کپی sidecar)
-- **مسیرها:** فقط **مطلق** برای مقصد دانلود (امنیت: بدون browse HTTP روی LAN)
+مسیر app-data سیستم‌عامل (در git نیست):
+
+| فایل | کاربرد |
+|------|--------|
+| `state.json` | دانلودها، prefs، recent_dirs |
+| `run/aria2.session` | بازیابی صف aria2 |
+| `run/rpc.secret` | توکن RPC محلی |
+| `run/aria2.log` | لاگ daemon |
+| `bin/aria2c` | کپی sidecar در صورت نیاز |
+
+مقصد دانلود فقط مسیر **مطلق** پذیرفته می‌شود.
 
 ## UI → backend
 
-مرورگر embedded دیگر `fetch('/api/...')` ندارد. `ui/app.js` با `invoke('desk_api', { req: { path, method, body } })` همان مسیرهای `/api/*` را صدا می‌زند؛ پاسخ `{ success, data }`.
+`ui/app.js` مسیرهای `/api/*` را از طریق `desk_api` صدا می‌زند. پاسخ موفق: `{ success, data }`. دیالوگ پوشه: native Tauri (`pick_folder`)، نه browse روی LAN.
+
+## چرخهٔ دانلود (ثابت‌های دامنه)
+
+پیاده‌سازی اصلی: `src-tauri/src/desk.rs`.
+
+1. متادیتای روی دیسک: `<sha1(torrent-bytes)>.torrent` — هر دو `info_hash` و `torrent_sha1` ذخیره شوند.
+2. مسیرهای یک آیتم: داده + `.aria2` + `.torrent` برای move/delete.
+3. وقتی GID زنده است از aria2 snapshot بگیر؛ بعد از stop/purge GID از بین می‌رود.
+4. **Move:** مسیر مطلق، جابه‌جایی candidateها، remap `files[].path`، re-add برای resume.
+5. **Delete:** stop + purge + unlink + حذف ریشهٔ آیتم + prune پوشهٔ خالی.
+6. **Partials:** اسکن roots برای `*.aria2` و اتصال به `download_id`.
+7. **Resume بدون GID:** re-add با `continue=true`؛ بدون magnet قابل resume نیست.
+8. **Magnet:** پس از `[METADATA]`، GID محتوا را از `followedBy` دنبال کن (نمایش ۱۰۰٪ جعلی ممنوع).
+
+`_legacy/torrent_desk.py` فقط مرجع تاریخی است؛ محصول shipping = Tauri + `ui/`.

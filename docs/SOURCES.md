@@ -1,41 +1,39 @@
 # منابع جست‌وجو
 
-پیاده‌سازی: `_legacy/sources.py` (از طریق `scripts/search_bridge.py`).
+پیاده‌سازی: `_legacy/sources.py` از طریق `scripts/search_bridge.py`.
 
-## دسته‌بندی مشکلات
+## عیب‌یابی
 
-| نوع | علامت | کار |
-|-----|--------|-----|
-| باگ extractor / mirror order | بعضی منابع همیشه ۰ نتیجه | fix در `sources.py` |
-| بلاک شبکه (CF، DNS ایران) | probe ❌ | `prefs.proxy` یا `mirrors.json` |
+| علامت | علت محتمل | اقدام |
+|-------|-----------|--------|
+| منبع همیشه ۰ نتیجه | extractor یا ترتیب آینه | اصلاح `sources.py` |
+| probe ناموفق | بلاک شبکه / DNS | پروکسی در تنظیمات |
 
 ## پروکسی
 
 در تنظیمات اپ یا `POST /api/settings`:
 
 ```json
-{"proxy": "socks5h://127.0.0.1:1080"}
+{ "proxy": "socks5h://127.0.0.1:10808" }
 ```
 
-## mirrors.json
+`socks5h` رزولوشن DNS را از طریق پروکسی انجام می‌دهد (مناسب ایران / xray).
 
-در **ریشه مخزن** (اختیاری). `_apply_mirror_overrides()` **کل** لیست آینهٔ یک منبع را جایگزین می‌کند:
+aria2 فقط پروکسی HTTP(S) را به‌عنوان `all-proxy` می‌پذیرد؛ پروکسی SOCKS روی جست‌وجو (curl) اثر دارد.
+
+## آینهٔ سفارشی
+
+فایل اختیاری `mirrors.json` در ریشهٔ مخزن؛ کل لیست آینهٔ یک منبع را جایگزین می‌کند:
 
 ```json
 {
-  "1337x": ["https://mirror-that-works.example"],
-  "yts": ["https://yts-mirror.example"],
-  "fitgirl": ["https://fitgirl-repacks.site"]
+  "1337x": ["https://mirror.example"],
+  "yts": ["https://yts-mirror.example"]
 }
 ```
 
-بعد: «بررسی همه سایت‌ها» در UI یا `POST /api/sources/probe`.
+سپس در UI «بررسی همه سایت‌ها» یا `POST /api/sources/probe`.
 
-## EZTV
+## محدودیت EZTV
 
-API سرچ ندارد؛ فقط آخرین ~۴۰۰ عنوان. برای کوئری غیر TV طبیعی است نتیجه خالی باشد — برای سریال **در حال پخش** تست کن.
-
-## یادداشت‌های منبع (نمونه وضعیت 2026-09-28)
-
-- معمولاً پاسخ‌دهنده با fix شبکه/کد: archive، thepiratebay، torrentdownloads، limetorrents، nyaa (با HTML fallback)
-- اغلب نیاز به پروکسی: 1337x، yts، fitgirl، torrentgalaxy
+API جست‌وجو ندارد؛ فقط آخرین عناوین. برای سریال‌های در حال پخش مناسب‌تر است.

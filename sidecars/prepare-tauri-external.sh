@@ -13,7 +13,7 @@ else
 fi
 
 if [[ ! -f "$src" ]]; then
-  echo "sidecars/prepare-tauri-external.sh: missing sidecars/$src (see docs/DEV.md)" >&2
+  echo "sidecars/prepare-tauri-external.sh: missing sidecars/$src (see sidecars/README.md)" >&2
   exit 1
 fi
 

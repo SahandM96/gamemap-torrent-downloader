@@ -1,49 +1,55 @@
 # GameMap Torrent Desk
 
-**GameMap Studio** — جست‌وجوی محلی در ایندکس‌های عمومی تورنت + مدیریت دانلود با **aria2c** (فرایند جدا، GPL-2+).
+جست‌وجوی محلی در ایندکس‌های عمومی تورنت و مدیریت دانلود با **aria2c** (فرایند جدا، GPL-2+).
 
-![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub](https://img.shields.io/badge/github-gamemap--torrent--downloader-181717?logo=github)](https://github.com/SahandM96/gamemap-torrent-downloader)
 
-مستندات کامل: [`docs/README.md`](docs/README.md)
+نگهداری: **GameMap Studio** · مستندات: [`docs/`](docs/README.md)
 
 ## ویژگی‌ها
 
-- رابط فارسی RTL، بدون وابستگی به فریم‌ورک فرانت‌اند سنگین
-- جست‌وجو در چند منبع عمومی (از طریق پل Python در v0.1؛ قابل جایگزینی با Rust)
-- دانلود magnet / فایل `.torrent`، صف، pause/resume، اسکن `*.aria2`
-- **aria2c** به‌صورت sidecar (نه لینک داخل باینری اپ) — جزئیات در [`NOTICE`](NOTICE)
+- رابط فارسی RTL (HTML/CSS/JS بدون فریم‌ورک سنگین)
+- جست‌وجو در چند منبع عمومی (پل Python در v0.1)
+- Magnet / `.torrent`، صف، pause/resume، اسکن `*.aria2`
+- aria2c به‌صورت **sidecar** — به باینری اپ لینک نمی‌شود ([`NOTICE`](NOTICE))
 
-## نیازمندی‌ها (توسعه)
+## پیش‌نیاز
 
-- Rust stable، Node.js 18+
-- Linux: برای `tauri build` معمولاً `libwebkit2gtk-4.1-dev` و وابستگی‌های Tauri ([راهنما](https://v2.tauri.app/start/prerequisites/))
-- `python3` برای پل جست‌وجو (`scripts/search_bridge.py` → `_legacy/sources.py`)
-- باینری aria2 را طبق [`sidecars/README.md`](sidecars/README.md) بگیرید (یا PATH سیستم)
+| مورد | توضیح |
+|------|--------|
+| Rust (stable) | `rustup` |
+| Node.js 18+ | CLI و وابستگی‌های Tauri |
+| Python 3 | پل جست‌وجو |
+| aria2c | [دانلود sidecar](sidecars/README.md) یا PATH |
+| Linux deps | [پیش‌نیازهای Tauri 2](https://v2.tauri.app/start/prerequisites/) |
 
-## اجرای dev
+جزئیات: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md)
+
+## اجرا
 
 ```bash
 npm install
+# یک‌بار: باینری aria2 را طبق sidecars/README.md بگیرید
 npm run tauri dev
 ```
 
-## ساخت release
+ساخت بسته:
 
 ```bash
 npm run tauri build
 ```
 
-خروجی در `src-tauri/target/release/bundle/`.
+خروجی: `src-tauri/target/release/bundle/`
 
-## حمایت
+## مجوز و حمایت
 
-[دونیت و لینک‌ها](DONATE.md) — داخل اپ تب **حمایت**.
+| | |
+|--|--|
+| کد اپ | [MIT](LICENSE) |
+| aria2c | [GPL-2+ sidecar](NOTICE) |
+| حمایت | [DONATE.md](DONATE.md) · تب «حمایت» در اپ |
 
-## مجوز
+## مخزن
 
-کد اپ: **MIT** — [`LICENSE`](LICENSE).  
-aria2c: **GPL-2+** — [`NOTICE`](NOTICE).
-
-## ارتباط
-
-مخزن: [`SahandM96/gamemap-torrent-downloader`](https://github.com/SahandM96/gamemap-torrent-downloader)
+https://github.com/SahandM96/gamemap-torrent-downloader
